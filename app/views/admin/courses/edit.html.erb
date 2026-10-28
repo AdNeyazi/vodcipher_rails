@@ -1,0 +1,37 @@
+<p><%= link_to "&larr; Courses".html_safe, admin_courses_path %></p>
+<h1>Manage: <%= @course.title %></h1>
+
+<div class="card narrow"><%= render "form", course: @course %></div>
+
+<div class="row-between">
+  <h2>Sessions</h2>
+  <%= link_to "Add session", new_admin_course_course_session_path(@course), class: "btn" %>
+</div>
+
+<table>
+  <thead>
+    <tr><th>#</th><th>Title</th><th>VdoCipher video id</th><th>Status</th><th>Length</th><th>Preview</th><th></th></tr>
+  </thead>
+  <tbody>
+    <% @course.course_sessions.each do |s| %>
+      <tr>
+        <td><%= s.position %></td>
+        <td><%= s.title %></td>
+        <td><code><%= s.vdocipher_video_id %></code></td>
+        <td><span class="badge <%= s.ready? ? 'ok' : 'warn' %>"><%= s.status %></span></td>
+        <td><%= format_duration(s.duration) %></td>
+        <td><%= s.preview? ? "Yes" : "" %></td>
+        <td class="actions">
+          <%= link_to "Edit", edit_admin_course_course_session_path(@course, s) %>
+          <%= button_to "Refresh status", refresh_admin_course_course_session_path(@course, s), method: :post, class: "link-button" %>
+          <%= button_to "Delete", admin_course_course_session_path(@course, s), method: :delete, class: "link-button danger",
+                form: { onsubmit: "return confirm('Remove this session?')" } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<% if @course.course_sessions.empty? %>
+  <p class="muted">No sessions yet.</p>
+<% end %>

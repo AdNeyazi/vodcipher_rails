@@ -1,0 +1,26 @@
+<p><%= link_to "&larr; All courses".html_safe, root_path %></p>
+
+<h1><%= @course.title %></h1>
+<p class="muted"><%= @course.description %></p>
+
+<% unless @enrolled || current_user.admin? %>
+  <%= button_to "Enroll (free demo)", enroll_course_path(@course), method: :post, class: "btn" %>
+<% end %>
+
+<h2>Sessions</h2>
+<ol class="session-list">
+  <% @sessions.each do |s| %>
+    <% can_watch = @enrolled || s.preview? || current_user.admin? %>
+    <li>
+      <% if can_watch %>
+        <%= link_to s.title, course_course_session_path(@course, s) %>
+      <% else %>
+        <span class="muted"><%= s.title %> (locked)</span>
+      <% end %>
+      <span class="small muted"><%= format_duration(s.duration) %></span>
+      <% if s.preview? %><span class="badge">Free preview</span><% end %>
+      <% unless s.ready? %><span class="badge warn"><%= s.status %></span><% end %>
+      <% if @completed_ids.include?(s.id) %><span class="badge ok">Done</span><% end %>
+    </li>
+  <% end %>
+</ol>

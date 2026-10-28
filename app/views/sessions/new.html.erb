@@ -1,0 +1,15 @@
+<div class="card narrow">
+  <h1>Sign in</h1>
+  <%= form_with url: login_path, method: :post, class: "stack" do |f| %>
+    <label>Email
+      <%= f.email_field :email, value: params[:email], autofocus: true, required: true %>
+    </label>
+    <label>Password
+      <%= f.password_field :password, required: true %>
+    </label>
+    <%= f.submit "Sign in", class: "btn" %>
+  <% end %>
+  <p class="muted small">
+    Demo accounts: admin@example.com or student@example.com, password <code>password123</code>
+  </p>
+</div>

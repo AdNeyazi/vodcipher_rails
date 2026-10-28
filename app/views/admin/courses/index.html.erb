@@ -1,0 +1,21 @@
+<div class="row-between">
+  <h1>Admin: courses</h1>
+  <%= link_to "New course", new_admin_course_path, class: "btn" %>
+</div>
+
+<table>
+  <thead><tr><th>Title</th><th>Sessions</th><th></th></tr></thead>
+  <tbody>
+    <% @courses.each do |course| %>
+      <tr>
+        <td><%= course.title %></td>
+        <td><%= course.course_sessions.size %></td>
+        <td class="actions">
+          <%= link_to "Manage", edit_admin_course_path(course) %>
+          <%= button_to "Delete", admin_course_path(course), method: :delete, class: "link-button danger",
+                form: { onsubmit: "return confirm('Delete this course and its sessions?')" } %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

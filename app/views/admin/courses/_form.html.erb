@@ -1,0 +1,13 @@
+<%= form_with model: [:admin, course], class: "stack" do |f| %>
+  <% if course.errors.any? %>
+    <div class="flash alert"><%= course.errors.full_messages.to_sentence %></div>
+  <% end %>
+
+  <label>Title
+    <%= f.text_field :title, required: true %>
+  </label>
+  <label>Description
+    <%= f.text_area :description, rows: 4 %>
+  </label>
+  <%= f.submit class: "btn" %>
+<% end %>

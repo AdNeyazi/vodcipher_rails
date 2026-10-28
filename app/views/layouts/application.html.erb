@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>VdoCipher Courses Demo</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application" %>
+  </head>
+
+  <body>
+    <header class="topbar">
+      <a class="brand" href="<%= root_path %>">VdoCipher Courses</a>
+      <nav>
+        <% if current_user %>
+          <a href="<%= root_path %>">Courses</a>
+          <% if current_user.admin? %><a href="<%= admin_root_path %>">Admin</a><% end %>
+          <span class="muted"><%= current_user.name %></span>
+          <%= button_to "Log out", logout_path, method: :delete, class: "link-button" %>
+        <% end %>
+      </nav>
+    </header>
+
+    <main class="container">
+      <% if notice.present? %><div class="flash notice"><%= notice %></div><% end %>
+      <% if alert.present? %><div class="flash alert"><%= alert %></div><% end %>
+      <%= yield %>
+    </main>
+  </body>
+</html>

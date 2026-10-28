@@ -1,0 +1,38 @@
+<%= form_with model: [:admin, @course, course_session], class: "stack" do |f| %>
+  <% if course_session.errors.any? %>
+    <div class="flash alert"><%= course_session.errors.full_messages.to_sentence %></div>
+  <% end %>
+
+  <label>Title
+    <%= f.text_field :title, required: true %>
+  </label>
+
+  <label>Position (order in the course)
+    <%= f.number_field :position, min: 0 %>
+  </label>
+
+  <label>VdoCipher video id
+    <%= f.text_field :vdocipher_video_id, required: true, list: "vdo-library", autocomplete: "off",
+          placeholder: "Paste an id or pick one from your VdoCipher library" %>
+  </label>
+  <datalist id="vdo-library">
+    <% @library.each do |v| %>
+      <option value="<%= v["id"] %>"><%= v["title"] %></option>
+    <% end %>
+  </datalist>
+  <% if @library_error %>
+    <p class="small muted">Could not load your VdoCipher library (<%= @library_error %>). You can still paste an id.</p>
+  <% elsif @library.any? %>
+    <p class="small muted"><%= pluralize(@library.size, "video") %> found in your VdoCipher account.</p>
+  <% end %>
+
+  <label>Status
+    <%= f.select :status, CourseSession::STATUSES %>
+  </label>
+
+  <label class="check">
+    <%= f.check_box :preview %> Free preview (watchable without enrolling)
+  </label>
+
+  <%= f.submit class: "btn" %>
+<% end %>

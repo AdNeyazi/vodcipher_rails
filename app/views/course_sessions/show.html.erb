@@ -1,0 +1,95 @@
+<p><%= link_to "&larr; #{h @course.title}".html_safe, course_path(@course) %></p>
+
+<div class="player-layout">
+  <section>
+    <h1><%= @course_session.title %></h1>
+
+    <div class="player-box">
+      <iframe id="vdo-player"
+              title="<%= @course_session.title %>"
+              allow="encrypted-media; fullscreen"
+              allowfullscreen></iframe>
+    </div>
+    <p id="player-status" class="muted">Loading video...</p>
+
+    <div class="pager">
+      <% if (prev_s = @course_session.previous_session) %>
+        <%= link_to "&larr; #{h prev_s.title}".html_safe, course_course_session_path(@course, prev_s), class: "btn secondary" %>
+      <% end %>
+      <% if (next_s = @course_session.next_session) %>
+        <%= link_to "#{h next_s.title} &rarr;".html_safe, course_course_session_path(@course, next_s), class: "btn", id: "next-link" %>
+      <% end %>
+    </div>
+  </section>
+
+  <aside class="card">
+    <h3>Course content</h3>
+    <ol class="session-list">
+      <% @sessions.each do |s| %>
+        <li class="<%= 'current' if s.id == @course_session.id %>">
+          <%= link_to s.title, course_course_session_path(@course, s) %>
+          <% if @completed_ids.include?(s.id) %><span class="badge ok">Done</span><% end %>
+        </li>
+      <% end %>
+    </ol>
+  </aside>
+</div>
+
+<script src="https://player.vdocipher.com/v2/api.js"></script>
+<script>
+  (function () {
+    var iframe = document.getElementById("vdo-player");
+    var statusEl = document.getElementById("player-status");
+    var csrf = document.querySelector('meta[name="csrf-token"]').content;
+    var otpUrl = "<%= otp_course_course_session_path(@course, @course_session) %>";
+    var progressUrl = "<%= course_course_session_progress_path(@course, @course_session) %>";
+    var resumeAt = <%= @progress && !@progress.completed? ? @progress.watched_seconds : 0 %>;
+    var lastSaved = 0;
+
+    function save(player, completed) {
+      var seconds = Math.floor(player.video.currentTime || 0);
+      lastSaved = seconds;
+      fetch(progressUrl, {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "X-CSRF-Token": csrf
+        },
+        body: JSON.stringify({ watched_seconds: seconds, completed: !!completed })
+      });
+    }
+
+    function setupPlayer() {
+      // Player JS API: https://www.vdocipher.com/docs/ (check names for your player version)
+      var player = VdoPlayer.getInstance(iframe);
+
+      player.video.addEventListener("loadeddata", function () {
+        if (resumeAt > 5) { player.video.currentTime = resumeAt; }
+      });
+      player.video.addEventListener("timeupdate", function () {
+        var now = Math.floor(player.video.currentTime || 0);
+        if (Math.abs(now - lastSaved) >= 15) { save(player, false); }
+      });
+      player.video.addEventListener("pause", function () { save(player, false); });
+      player.video.addEventListener("ended", function () {
+        save(player, true);
+        statusEl.textContent = "Session complete.";
+        var next = document.getElementById("next-link");
+        if (next) { statusEl.textContent += " Up next: " + next.textContent.replace("→", "").trim(); }
+      });
+    }
+
+    fetch(otpUrl, { headers: { "Accept": "application/json" }, credentials: "same-origin" })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (r) {
+        if (!r.ok) { statusEl.textContent = r.data.error || "Video unavailable."; return; }
+        iframe.src = "https://player.vdocipher.com/v2/?otp=" + encodeURIComponent(r.data.otp) +
+                     "&playbackInfo=" + encodeURIComponent(r.data.playbackInfo);
+        statusEl.textContent = "";
+        setupPlayer();
+      })
+      .catch(function () { statusEl.textContent = "Could not load the video. Please refresh."; });
+  })();
+</script>

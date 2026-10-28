@@ -1,0 +1,21 @@
+<h1>Courses</h1>
+
+<div class="grid">
+  <% @courses.each do |course| %>
+    <article class="card">
+      <h2><%= link_to course.title, course_path(course) %></h2>
+      <p class="muted"><%= truncate(course.description.to_s, length: 140) %></p>
+      <p class="small">
+        <%= pluralize(course.course_sessions.size, "session") %>
+        <% if @enrolled_ids.include?(course.id) %>
+          <span class="badge ok">Enrolled</span>
+        <% end %>
+      </p>
+      <%= link_to(@enrolled_ids.include?(course.id) ? "Continue" : "View course", course_path(course), class: "btn") %>
+    </article>
+  <% end %>
+</div>
+
+<% if @courses.empty? %>
+  <p class="muted">No courses yet. <% if current_user.admin? %><%= link_to "Create one", new_admin_course_path %>.<% end %></p>
+<% end %>
